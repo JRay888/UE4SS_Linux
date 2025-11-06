@@ -5,10 +5,16 @@ project(${TARGET})
 
 option(UE4SS_${TARGET}_BUILD_SHARED "Build as a shared lib" OFF)
 
-set(${TARGET}_Sources
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/FileType/WinFile.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/File.cpp"
-        )
+if(${Platform} STREQUAL "Linux")
+    set(${TARGET}_Sources
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/File.cpp"
+            )
+else()
+    set(${TARGET}_Sources
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/FileType/WinFile.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/File.cpp"
+            )
+endif()
 
 string(REGEX REPLACE "(.)([A-Z])" "\\1_\\2" MODULE_NAME ${TARGET})
 string(TOUPPER ${MODULE_NAME} MODULE_NAME)
