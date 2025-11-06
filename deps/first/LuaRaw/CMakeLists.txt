@@ -5,7 +5,7 @@ project(${TARGET})
 
 option(UE4SS_${TARGET}_BUILD_SHARED "Build as a shared lib" OFF)
 
-set(${TARGET}_Sources
+set(${TARGET}_Sources_Common
         "${CMAKE_CURRENT_SOURCE_DIR}/src/lapi.c"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/lauxlib.c"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/lbaselib.c"
@@ -36,12 +36,20 @@ set(${TARGET}_Sources
         "${CMAKE_CURRENT_SOURCE_DIR}/src/ltm.c"
         #${CMAKE_CURRENT_SOURCE_DIR}/"src/lua.c"
         #${CMAKE_CURRENT_SOURCE_DIR}/"src/luac.c"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/luauser.c"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/lundump.c"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/lutf8lib.c"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/lvm.c"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/lzio.c"
         )
+
+if(WIN32)
+    set(${TARGET}_Sources
+            ${${TARGET}_Sources_Common}
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/luauser.c"
+            )
+else()
+    set(${TARGET}_Sources ${${TARGET}_Sources_Common})
+endif()
 
 # This makes the .c files be compiled with the C++ compiler
 # This causes __cplusplus to be defined which is what Lua uses to determine whether it's compiled as C or C++
