@@ -22,43 +22,43 @@ jobs:
     
       - name: Install dependencies
         run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          cmake \
-          git \
-          g++-11 \
-          gcc-11 \
-          libgl1-mesa-dev \
-          libx11-dev \
-          libxrandr-dev \
-          libxinerama-dev \
-          libxcursor-dev \
-          libxi-dev \
-          pkg-config
-        
-        # Set GCC 11 as default
-        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
-        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
-        
-        gcc --version
-        g++ --version
-        cmake --version
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            git \
+            g++-11 \
+            gcc-11 \
+            libgl1-mesa-dev \
+            libx11-dev \
+            libxrandr-dev \
+            libxinerama-dev \
+            libxcursor-dev \
+            libxi-dev \
+            pkg-config
+          
+          # Set GCC 11 as default
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
+          
+          gcc --version
+          g++ --version
+          cmake --version
     
       - name: Install Rust
         run: |
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
     
       - name: Verify Rust installation
         run: |
-        export PATH="$HOME/.cargo/bin:$PATH"
-        rustc --version
-        cargo --version
+          export PATH="$HOME/.cargo/bin:$PATH"
+          rustc --version
+          cargo --version
     
       - name: Cache Rust dependencies
         uses: actions/cache@v4
-      with:
+        with:
         path: |
           ~/.cargo/bin/
           ~/.cargo/registry/index/
@@ -69,27 +69,27 @@ jobs:
     
       - name: Configure CMake
         run: |
-        source $HOME/.cargo/env
-        which rustc
-        rustc --version
-        mkdir -p build_linux
-        cd build_linux
-        cmake .. \
-          -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-          -DCMAKE_CXX_COMPILER=g++-11 \
-          -DCMAKE_C_COMPILER=gcc-11 \
-          -DCMAKE_CXX_STANDARD=23 \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          source $HOME/.cargo/env
+          which rustc
+          rustc --version
+          mkdir -p build_linux
+          cd build_linux
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_CXX_COMPILER=g++-11 \
+            -DCMAKE_C_COMPILER=gcc-11 \
+            -DCMAKE_CXX_STANDARD=23 \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     
       - name: Build
         run: |
-        source $HOME/.cargo/env
-        cd build_linux
-        cmake --build . --config ${{ env.BUILD_TYPE }} --parallel $(nproc)
+          source $HOME/.cargo/env
+          cd build_linux
+          cmake --build . --config ${{ env.BUILD_TYPE }} --parallel $(nproc)
     
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
-      with:
+        with:
         name: UE4SS-Linux-${{ github.sha }}
         path: |
           build_linux/Output/Game__Shipping__Linux/UE4SS/bin/
@@ -100,17 +100,17 @@ jobs:
       - name: Create release package
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
         run: |
-        mkdir -p release_package
-        cp -r build_linux/Output/Game__Shipping__Linux/UE4SS/bin/* release_package/
-        cp LINUX_PORT.md release_package/
-        cp QUICK_START_LINUX.md release_package/
-        cd release_package
-        tar -czf ../UE4SS-Linux-${{ github.sha }}.tar.gz *
+          mkdir -p release_package
+          cp -r build_linux/Output/Game__Shipping__Linux/UE4SS/bin/* release_package/
+          cp LINUX_PORT.md release_package/
+          cp QUICK_START_LINUX.md release_package/
+          cd release_package
+          tar -czf ../UE4SS-Linux-${{ github.sha }}.tar.gz *
     
       - name: Upload release package
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4
-      with:
+        with:
         name: UE4SS-Linux-Release-${{ github.sha }}
         path: UE4SS-Linux-${{ github.sha }}.tar.gz
         retention-days: 90
