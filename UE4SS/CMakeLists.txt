@@ -170,8 +170,11 @@ target_link_libraries(${TARGET} PUBLIC
     Function IniParser JSON
     Input Constructs Helpers
     MProgram ScopedTimer Profiler
-    patternsleuth_bind
 )
+
+if(WIN32)
+    target_link_libraries(${TARGET} PUBLIC patternsleuth_bind)
+endif()
 
 if(WIN32)
     target_link_libraries(${TARGET} PUBLIC
