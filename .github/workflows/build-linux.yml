@@ -46,13 +46,16 @@ jobs:
         g++ --version
         cmake --version
     
-    - name: Setup Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
+    - name: Install Rust
+      run: |
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
     
-    - name: Add Rust to PATH
-      run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+    - name: Verify Rust installation
+      run: |
+        export PATH="$HOME/.cargo/bin:$PATH"
+        rustc --version
+        cargo --version
     
     - name: Cache Rust dependencies
       uses: actions/cache@v3
