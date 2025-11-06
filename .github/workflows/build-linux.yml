@@ -64,6 +64,7 @@ jobs:
     
     - name: Configure CMake
       run: |
+        source $HOME/.cargo/env
         mkdir -p build_linux
         cd build_linux
         cmake .. \
@@ -75,6 +76,7 @@ jobs:
     
     - name: Build
       run: |
+        source $HOME/.cargo/env
         cd build_linux
         cmake --build . --config ${{ env.BUILD_TYPE }} --parallel $(nproc)
     
