@@ -1,13 +1,22 @@
 ================================================================================
-                    READY TO PUSH TO GITLAB!
+                READY TO PUSH TO GITLAB OR GITHUB!
 ================================================================================
 
 ✅ Git repository initialized
-✅ All files committed
-✅ Ready to push to GitLab
+✅ All files committed  
+✅ Ready to push to GitLab or GitHub
+
+You have BOTH options set up!
 
 ================================================================================
-WHAT YOU NEED TO DO NOW:
+CHOOSE YOUR PLATFORM:
+================================================================================
+
+OPTION A: GITLAB (Easier, no Epic Games linking needed initially)
+OPTION B: GITHUB (Popular, but needs Epic Games account linking)
+
+================================================================================
+OPTION A: GITLAB
 ================================================================================
 
 STEP 1: Create GitLab Account & Repository
@@ -51,7 +60,59 @@ If the script doesn't work, you can push manually:
    git push -u origin main
 
 ================================================================================
-AFTER PUSHING:
+OPTION B: GITHUB
+================================================================================
+
+STEP 1: Link GitHub to Epic Games (REQUIRED!)
+-----------------------------------------------
+
+IMPORTANT: Do this FIRST or the build will fail!
+
+1. Go to https://www.epicgames.com/account/connections
+2. Log in to your Epic Games account
+3. Find GitHub and click "Connect"
+4. Authorize the connection
+
+This is required for Unreal Engine submodules to work.
+
+STEP 2: Create GitHub Repository
+---------------------------------
+
+1. Go to https://github.com
+2. Sign in (or create account)
+3. Click "+" → "New repository"
+4. Fill in:
+   - Repository name: RE-UE4SS-Linux (or whatever you want)
+   - Visibility: Public or Private
+   - DO NOT initialize with README (we already have files)
+5. Click "Create repository"
+6. COPY the repository URL (looks like: https://github.com/YOUR_USERNAME/RE-UE4SS-Linux.git)
+
+STEP 3: Run the Push Script
+----------------------------
+
+Open PowerShell in this directory and run:
+
+    .\push-to-github.ps1
+
+It will:
+- Ask for your GitHub repository URL
+- Add it as remote
+- Push all your code to GitHub
+- Set up everything automatically
+
+================================================================================
+AFTER PUSHING (GITHUB):
+================================================================================
+
+1. Go to your GitHub repository page
+2. Click "Actions" tab
+3. You should see a workflow automatically starting!
+
+The .github/workflows/build-linux.yml file will trigger an automated build.
+
+================================================================================
+AFTER PUSHING (GITLAB):
 ================================================================================
 
 1. Go to your GitLab project page
