@@ -67,6 +67,9 @@ jobs:
     
     - name: Configure CMake
       run: |
+        export PATH="$HOME/.cargo/bin:$PATH"
+        which rustc || echo "Rust not found in PATH"
+        rustc --version || echo "Cannot run rustc"
         mkdir -p build_linux
         cd build_linux
         cmake .. \
@@ -74,7 +77,8 @@ jobs:
           -DCMAKE_CXX_COMPILER=g++-11 \
           -DCMAKE_C_COMPILER=gcc-11 \
           -DCMAKE_CXX_STANDARD=23 \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+          -DRust_COMPILER=$HOME/.cargo/bin/rustc
     
     - name: Build
       run: |
