@@ -27,7 +27,7 @@ endif ()
 if (${RC_PROFILER_FLAVOR} STREQUAL Tracy)
     # Tracy start
     FetchContent_Declare(Tracy
-        GIT_REPOSITORY git@github.com:wolfpld/tracy.git
+        GIT_REPOSITORY https://github.com/wolfpld/tracy.git
         GIT_TAG v0.10
         GIT_PROGRESS ON)
 

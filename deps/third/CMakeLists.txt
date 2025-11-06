@@ -18,21 +18,21 @@ FetchContent_MakeAvailable(glaze)
 
 # ImGui start
 FetchContent_Declare(ImGui
-    GIT_REPOSITORY git@github.com:ocornut/imgui.git
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
     GIT_TAG v1.89
     GIT_SHALLOW TRUE
     GIT_PROGRESS ON
     CONFIGURE_COMMAND "")
     
 FetchContent_Declare(ImGuiTextEdit
-    GIT_REPOSITORY git@github.com:UE4SS-RE/ImGuiColorTextEdit.git
+    GIT_REPOSITORY https://github.com/UE4SS-RE/ImGuiColorTextEdit.git
     GIT_TAG master
     GIT_SHALLOW TRUE
     GIT_PROGRESS ON
     CONFIGURE_COMMAND "")
     
 FetchContent_Declare(IconFontCppHeaders
-    GIT_REPOSITORY git@github.com:juliettef/IconFontCppHeaders.git
+    GIT_REPOSITORY https://github.com/juliettef/IconFontCppHeaders.git
     GIT_TAG main
     GIT_SHALLOW TRUE
     GIT_PROGRESS ON
@@ -43,7 +43,7 @@ add_subdirectory("imgui")
 
 # Zydis start
 FetchContent_Declare(zydis
-    GIT_REPOSITORY git@github.com:zyantific/zydis.git
+    GIT_REPOSITORY https://github.com/zyantific/zydis.git
     GIT_TAG v4.1.0
     GIT_SHALLOW TRUE
     GIT_PROGRESS ON)
@@ -53,7 +53,7 @@ add_subdirectory("zydis")
 
 # PolyHook start
 FetchContent_Declare(PolyHook2
-    GIT_REPOSITORY git@github.com:stevemk14ebr/PolyHook_2_0.git
+    GIT_REPOSITORY https://github.com/stevemk14ebr/PolyHook_2_0.git
     GIT_TAG fd2a88f09c8ae89440858fc52573656141013c7f
     GIT_PROGRESS ON)
 
@@ -62,7 +62,7 @@ add_subdirectory("PolyHook_2_0")
 
 # raw_pdb start
 FetchContent_Declare(raw_pdb
-    GIT_REPOSITORY git@github.com:MolecularMatters/raw_pdb.git
+    GIT_REPOSITORY https://github.com/MolecularMatters/raw_pdb.git
     GIT_TAG 8c6a7146393c83d27fa101e8bc8017f2a7f151df
     GIT_PROGRESS ON)
     
