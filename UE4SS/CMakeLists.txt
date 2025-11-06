@@ -4,7 +4,10 @@ set(TARGET UE4SS)
 project(${TARGET})
 message("Project: UE4SS")
 
-add_subdirectory("proxy_generator")
+# Proxy generator is Windows-only (DLL proxying)
+if(WIN32)
+    add_subdirectory("proxy_generator")
+endif()
 
 # Release settings -> START
 option(UE4SS_LIB_BETA_IS_STARTED "Have beta releases started for the current major version" ON)
