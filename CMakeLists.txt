@@ -24,7 +24,12 @@ option(UE4SS_CONSOLE_COLORS_ENABLED "Enable console colors" OFF)
 # Settings -> END
 
 # Projects -> START
-set(PROJECTS "UE4SS" "UVTD")
+if(WIN32)
+    set(PROJECTS "UE4SS" "UVTD")
+else()
+    # UVTD is Windows-only (requires PDB symbols)
+    set(PROJECTS "UE4SS")
+endif()
 # Projects -> END
 
 # Very temporary fix for ninja/clang thinking we should use MSVC simulation
