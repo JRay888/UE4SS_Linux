@@ -51,6 +51,9 @@ jobs:
       with:
         toolchain: stable
     
+    - name: Add Rust to PATH
+      run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+    
     - name: Cache Rust dependencies
       uses: actions/cache@v3
       with:
@@ -64,7 +67,6 @@ jobs:
     
     - name: Configure CMake
       run: |
-        source $HOME/.cargo/env
         mkdir -p build_linux
         cd build_linux
         cmake .. \
@@ -76,7 +78,6 @@ jobs:
     
     - name: Build
       run: |
-        source $HOME/.cargo/env
         cd build_linux
         cmake --build . --config ${{ env.BUILD_TYPE }} --parallel $(nproc)
     
