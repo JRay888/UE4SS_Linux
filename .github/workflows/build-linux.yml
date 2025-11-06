@@ -59,13 +59,13 @@ jobs:
       - name: Cache Rust dependencies
         uses: actions/cache@v4
         with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     
       - name: Configure CMake
         run: |
@@ -90,12 +90,12 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-        name: UE4SS-Linux-${{ github.sha }}
-        path: |
-          build_linux/Output/Game__Shipping__Linux/UE4SS/bin/
-          LINUX_PORT.md
-          QUICK_START_LINUX.md
-        retention-days: 30
+          name: UE4SS-Linux-${{ github.sha }}
+          path: |
+            build_linux/Output/Game__Shipping__Linux/UE4SS/bin/
+            LINUX_PORT.md
+            QUICK_START_LINUX.md
+          retention-days: 30
     
       - name: Create release package
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
@@ -111,9 +111,9 @@ jobs:
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4
         with:
-        name: UE4SS-Linux-Release-${{ github.sha }}
-        path: UE4SS-Linux-${{ github.sha }}.tar.gz
-        retention-days: 90
+          name: UE4SS-Linux-Release-${{ github.sha }}
+          path: UE4SS-Linux-${{ github.sha }}.tar.gz
+          retention-days: 90
 
   build-linux-debug:
     runs-on: ubuntu-22.04
