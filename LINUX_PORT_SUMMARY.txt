@@ -1,0 +1,183 @@
+================================================================================
+UE4SS LINUX PORT - SUMMARY OF CHANGES
+================================================================================
+
+WHAT WAS DONE:
+--------------
+
+1. CMAKE BUILD SYSTEM UPDATES
+   - Modified CMakeLists.txt to support Linux platform detection
+   - Made ASM_MASM assembly optional (Windows-only)
+   - Added Linux platform definitions (PLATFORM_LINUX, PLATFORM_UNIX)
+   - Added conditional library linking (pthread, dl for Linux)
+   - Made MSVC-specific settings conditional
+
+2. NEW LINUX SOURCE FILES CREATED
+   - src/main_ue4ss_linux.cpp
+     * Replacement for DllMain using __attribute__((constructor))
+     * Uses pthreads instead of Windows CreateThread
+     * Uses dladdr() to get .so path
+     
+   - src/CrashDumper_linux.cpp
+     * Uses signal handlers (SIGSEGV, SIGABRT, etc.)
+     * Uses backtrace() for stack traces instead of MiniDumpWriteDump
+     * Writes crash logs to text files
+
+3. PLATFORM-SPECIFIC COMPILATION
+   - UE4SS/CMakeLists.txt modified to conditionally compile:
+     * Windows: main_ue4ss_rewritten.cpp, CrashDumper.cpp, DX11.cpp, Windows.cpp
+     * Linux: main_ue4ss_linux.cpp, CrashDumper_linux.cpp
+   - Removed DX11 and Win32 GUI from Linux builds
+
+4. BUILD SCRIPTS
+   - build_linux.sh: Automated build script for Linux
+   - Handles parallel compilation with nproc
+   - Supports Debug, Shipping, and Test build modes
+
+5. DOCUMENTATION
+   - LINUX_PORT.md: Comprehensive porting documentation
+   - QUICK_START_LINUX.md: Quick setup guide
+   - This summary file
+
+================================================================================
+WHAT STILL NEEDS WORK:
+================================================================================
+
+CRITICAL (Will likely cause build failures):
+--------------------------------------------
+1. First-party dependencies in deps/first/ may have Windows-specific code:
+   - File (File I/O)
+   - DynamicOutput (Console/output handling)
+   - Input (Input handling)
+   - Helpers (Various utilities)
+   - SinglePassSigScanner (Memory scanning)
+   
+   These will need to be checked and potentially modified for Linux.
+
+2. Third-party dependencies:
+   - PolyHook_2: Function hooking library - may need Linux-specific configuration
+   - ImGui: Should work with GLFW backend (included)
+   - raw_pdb: PDB file parsing - Windows-only, may need to be disabled on Linux
+
+IMPORTANT (Will cause runtime issues):
+---------------------------------------
+3. UE4SSProgram.cpp probably has Windows-specific code
+4. Memory scanning and pattern matching may behave differently on Linux
+5. Function hooking calling conventions differ between Windows and Linux
+6. AOB (Array of Bytes) signatures will likely need updating for Linux binaries
+
+TESTING REQUIRED:
+-----------------
+7. Verify LD_PRELOAD injection works with Palworld Linux server
+8. Confirm Lua engine initializes correctly
+9. Test that UE object system is accessible in Linux server build
+10. Verify mod loading and execution
+
+================================================================================
+HOW TO PROCEED:
+================================================================================
+
+STEP 1: TRANSFER TO LINUX
+   Copy this entire directory to your Linux server
+
+STEP 2: ATTEMPT INITIAL BUILD
+   cd RE-UE4SS-3.0.1
+   chmod +x build_linux.sh
+   ./build_linux.sh Shipping
+
+STEP 3: ADDRESS BUILD ERRORS
+   You WILL encounter errors. For each error:
+   a) Identify if it's in first-party or third-party code
+   b) Look for Windows-specific APIs (Windows.h, HANDLE, DWORD, etc.)
+   c) Replace with Linux equivalents:
+      - Windows.h → unistd.h, dlfcn.h, pthread.h
+      - CreateThread → pthread_create
+      - WaitForSingleObject → pthread_join
+      - HANDLE → int (file descriptors) or pthread_t (threads)
+      - LoadLibrary/GetProcAddress → dlopen/dlsym
+      - GetModuleHandle → dladdr
+
+STEP 4: TEST WITH PALWORLD
+   Once it builds:
+   a) Copy libUE4SS.so to Palworld server directory
+   b) Try: LD_PRELOAD=./libUE4SS.so ./PalServer-Linux-Shipping
+   c) Check if it loads: cat /proc/<PID>/maps | grep UE4SS
+   d) Look for crash logs or error messages
+
+STEP 5: DEBUG AND ITERATE
+   - Start with minimal mods
+   - Enable verbose logging
+   - Check that Lua initializes
+   - Verify UE object system access
+
+================================================================================
+REALISTIC EXPECTATIONS:
+================================================================================
+
+This is a LARGE undertaking. Here's what to expect:
+
+BEST CASE SCENARIO (30% chance):
+- Build succeeds with minor fixes
+- UE4SS loads into Palworld server
+- Some Windows-specific dependencies cause issues
+- Core Lua functionality works
+- 1-2 weeks of debugging to get basic mods working
+
+LIKELY SCENARIO (50% chance):
+- Multiple build errors in first-party dependencies
+- Need to create platform abstraction layers
+- Function hooking issues on Linux
+- Memory layout differences cause crashes
+- 1-2 months of development to stabilize
+
+WORST CASE SCENARIO (20% chance):
+- Palworld Linux server uses different UE build configuration
+- Core UE objects not accessible the same way
+- Fundamental architectural differences
+- May need complete rewrite of injection/loading mechanism
+
+================================================================================
+ALTERNATIVE APPROACHES IF THIS FAILS:
+================================================================================
+
+If the Linux port proves too difficult:
+
+1. Run Windows Palworld server under Wine/Proton
+   - More likely to work with existing UE4SS
+   - Performance overhead but proven compatibility
+
+2. Create server-side-only mod framework
+   - Skip GUI entirely
+   - Focus only on Lua scripting
+   - Minimal Windows dependencies
+
+3. Wait for community support
+   - Share your work on UE4SS Discord
+   - Others may contribute platform-specific fixes
+   - Combined effort more likely to succeed
+
+================================================================================
+FILES CHANGED/CREATED:
+================================================================================
+
+Modified Files:
+- CMakeLists.txt (root)
+- UE4SS/CMakeLists.txt
+
+New Files:
+- UE4SS/src/main_ue4ss_linux.cpp
+- UE4SS/src/CrashDumper_linux.cpp
+- build_linux.sh
+- LINUX_PORT.md
+- QUICK_START_LINUX.md
+- LINUX_PORT_SUMMARY.txt (this file)
+
+================================================================================
+GOOD LUCK!
+================================================================================
+
+This is experimental and challenging work. You're doing something that hasn't
+been done before with UE4SS. Document your journey, share your findings, and
+don't hesitate to ask for help from the UE4SS community.
+
+The foundation is laid - now it's time to test and iterate!

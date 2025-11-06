@@ -1,0 +1,123 @@
+image: ubuntu:22.04
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  DEBIAN_FRONTEND: noninteractive
+
+stages:
+  - setup
+  - build
+  - package
+
+before_script:
+  - apt-get update -qq
+
+# Install all dependencies
+setup:dependencies:
+  stage: setup
+  script:
+    - apt-get install -y 
+        build-essential 
+        cmake 
+        git 
+        g++-11
+        gcc-11
+        libgl1-mesa-dev 
+        libx11-dev 
+        libxrandr-dev 
+        libxinerama-dev 
+        libxcursor-dev 
+        libxi-dev
+        curl
+        pkg-config
+    # Set GCC 11 as default
+    - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
+    - update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
+    # Install Rust
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    - source $HOME/.cargo/env
+    - rustc --version
+    - cmake --version
+    - g++ --version
+  cache:
+    key: dependencies-cache
+    paths:
+      - /root/.cargo/
+  artifacts:
+    paths:
+      - /root/.cargo/
+    expire_in: 1 day
+
+# Build for Linux - Shipping configuration
+build:linux:shipping:
+  stage: build
+  dependencies:
+    - setup:dependencies
+  script:
+    - source $HOME/.cargo/env || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
+    - mkdir -p build_linux
+    - cd build_linux
+    - cmake .. 
+        -DCMAKE_BUILD_TYPE=Game__Shipping__Linux
+        -DCMAKE_CXX_COMPILER=g++-11
+        -DCMAKE_C_COMPILER=gcc-11
+        -DCMAKE_CXX_STANDARD=23
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    - cmake --build . --config Game__Shipping__Linux --parallel $(nproc) || exit 1
+  artifacts:
+    name: "UE4SS-Linux-Shipping-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - build_linux/Output/Game__Shipping__Linux/UE4SS/bin/
+      - build_linux/compile_commands.json
+    expire_in: 1 week
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# Build for Linux - Debug configuration
+build:linux:debug:
+  stage: build
+  dependencies:
+    - setup:dependencies
+  script:
+    - source $HOME/.cargo/env || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
+    - mkdir -p build_linux_debug
+    - cd build_linux_debug
+    - cmake ..
+        -DCMAKE_BUILD_TYPE=Game__Debug__Linux
+        -DCMAKE_CXX_COMPILER=g++-11
+        -DCMAKE_C_COMPILER=gcc-11
+        -DCMAKE_CXX_STANDARD=23
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    - cmake --build . --config Game__Debug__Linux --parallel $(nproc) || exit 1
+  artifacts:
+    name: "UE4SS-Linux-Debug-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - build_linux_debug/Output/Game__Debug__Linux/UE4SS/bin/
+    expire_in: 1 week
+  only:
+    - develop
+    - merge_requests
+
+# Package the release
+package:release:
+  stage: package
+  dependencies:
+    - build:linux:shipping
+  script:
+    - mkdir -p release_package
+    - cp -r build_linux/Output/Game__Shipping__Linux/UE4SS/bin/* release_package/
+    - cp LINUX_PORT.md release_package/
+    - cp QUICK_START_LINUX.md release_package/
+    - cd release_package
+    - tar -czf UE4SS-Linux-${CI_COMMIT_SHORT_SHA}.tar.gz *
+    - mv UE4SS-Linux-${CI_COMMIT_SHORT_SHA}.tar.gz ..
+  artifacts:
+    name: "UE4SS-Linux-Release-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - UE4SS-Linux-${CI_COMMIT_SHORT_SHA}.tar.gz
+    expire_in: 30 days
+  only:
+    - main
+    - tags

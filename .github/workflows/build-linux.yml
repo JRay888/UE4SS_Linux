@@ -1,0 +1,148 @@
+name: Build UE4SS for Linux
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: Game__Shipping__Linux
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          git \
+          g++-11 \
+          gcc-11 \
+          libgl1-mesa-dev \
+          libx11-dev \
+          libxrandr-dev \
+          libxinerama-dev \
+          libxcursor-dev \
+          libxi-dev \
+          pkg-config
+        
+        # Set GCC 11 as default
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
+        
+        gcc --version
+        g++ --version
+        cmake --version
+    
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+    
+    - name: Cache Rust dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+    
+    - name: Configure CMake
+      run: |
+        mkdir -p build_linux
+        cd build_linux
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+          -DCMAKE_CXX_COMPILER=g++-11 \
+          -DCMAKE_C_COMPILER=gcc-11 \
+          -DCMAKE_CXX_STANDARD=23 \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    
+    - name: Build
+      run: |
+        cd build_linux
+        cmake --build . --config ${{ env.BUILD_TYPE }} --parallel $(nproc)
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: UE4SS-Linux-${{ github.sha }}
+        path: |
+          build_linux/Output/Game__Shipping__Linux/UE4SS/bin/
+          LINUX_PORT.md
+          QUICK_START_LINUX.md
+        retention-days: 30
+    
+    - name: Create release package
+      if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+      run: |
+        mkdir -p release_package
+        cp -r build_linux/Output/Game__Shipping__Linux/UE4SS/bin/* release_package/
+        cp LINUX_PORT.md release_package/
+        cp QUICK_START_LINUX.md release_package/
+        cd release_package
+        tar -czf ../UE4SS-Linux-${{ github.sha }}.tar.gz *
+    
+    - name: Upload release package
+      if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+      uses: actions/upload-artifact@v3
+      with:
+        name: UE4SS-Linux-Release-${{ github.sha }}
+        path: UE4SS-Linux-${{ github.sha }}.tar.gz
+        retention-days: 90
+
+  build-linux-debug:
+    runs-on: ubuntu-22.04
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential cmake git g++-11 gcc-11 \
+          libgl1-mesa-dev libx11-dev libxrandr-dev \
+          libxinerama-dev libxcursor-dev libxi-dev pkg-config
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
+    
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+    
+    - name: Build Debug
+      run: |
+        mkdir -p build_linux_debug
+        cd build_linux_debug
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Game__Debug__Linux \
+          -DCMAKE_CXX_COMPILER=g++-11 \
+          -DCMAKE_C_COMPILER=gcc-11 \
+          -DCMAKE_CXX_STANDARD=23
+        cmake --build . --config Game__Debug__Linux --parallel $(nproc)
+    
+    - name: Upload debug artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: UE4SS-Linux-Debug-${{ github.sha }}
+        path: build_linux_debug/Output/Game__Debug__Linux/UE4SS/bin/
+        retention-days: 7
